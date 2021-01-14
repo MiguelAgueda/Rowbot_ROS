@@ -3,3 +3,4 @@
 build/
 devel/
 workspace.code-workspace
+*/__pycache__/

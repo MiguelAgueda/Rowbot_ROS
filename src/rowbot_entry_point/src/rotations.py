@@ -1,3 +1,9 @@
+# Utitlity file with functions for handling rotations.
+#
+# Authors: Trevor Ablett and Jonathan Kelly
+# University of Toronto Institute for Aerospace Studies
+# Source: https://www.coursera.org/learn/state-estimation-localization-self-driving-cars
+
 import numpy as np
 
 def angle_normalize(a):

@@ -1,0 +1,59 @@
+<!--  -->
+<launch>
+
+<!-- 
+  Start lidar node. 
+
+  Publishes range-scan data to the /scan topic.
+  -->
+<node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen">
+    <param name="serial_port" type="string" value="/dev/ttyUSB0"/>
+    <param name="serial_baudrate" type="int" value="115200"/>
+    <param name="frame_id" type="string" value="laser"/>
+    <param name="inverted" type="bool" value="false"/>
+    <param name="angle_compensate" type="bool" value="true"/>
+</node>
+
+<!-- 
+  Start ROS Serial node (rosserial_python). 
+
+  Begins communication with off-board MCU (Teensy 4.0), which handles IMU (ICM-20948) 
+  and GNSS (SAM-M8Q) communication.
+ -->
+<node pkg="rosserial_python" type="serial_node.py" name="rosserial" output="screen">
+  <param name="port" value="/dev/ttyTHS1" />
+  <param name="baud" value="115200" />
+</node>
+
+<!-- 
+  Start node which transforms raw scan data into point cloud data.
+ -->
+<node name="scan_to_pc" pkg="scan_to_pointcloud" type="scan_to_pointcloud_node" output="screen" />
+
+<!-- 
+  Start Iterative Closest Point (ICP) node.
+
+  This node utilizes raw range-scan data to generate point clouds.
+ -->
+<node name="icp" pkg="icp_pcl_ros" type="icp_pcl_ros_node" output="screen" />
+
+<!-- 
+  Start ROS TF-broadcaster for tracking transforms from the world-frame into the base_link-frame.
+
+  This node is responsible for using filtered sensor output to position the base_link 
+  in it's correct position relative to the world.
+ -->
+<node name="frame_manager" pkg="frame_man_tf" type="frame_man_tf_node.py" output="screen" />
+
+<!-- 
+  Start ROS Static Transform nodes. 
+
+  These nodes are responsible for describing the constant transformations between each reference frame.
+ -->
+<node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map_to_world" args="0.0 0.0 0.0 0.0 0 0 map world" />
+<node pkg="tf2_ros" type="static_transform_publisher" name="tf2_odom_to_base_link" args="0.0 0.0 0.0 0.0 0 0 odom base_link" />
+<node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_link_to_laser" args="0.09 0.0 0.105 3.1415926 0 0 base_link laser" />
+
+<node pkg="rowbot_entry_point" name="test" type="main.py" output="screen" />
+
+</launch>
